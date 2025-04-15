@@ -4,7 +4,6 @@ go 1.22.2
 
 require (
 	github.com/go-playground/validator/v10 v10.26.0
-	github.com/google/wire v0.6.0
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/redis/go-redis/v9 v9.7.3
 	github.com/rs/zerolog v1.34.0

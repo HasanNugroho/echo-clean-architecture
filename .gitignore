@@ -24,7 +24,7 @@ tmp/
 .idea
 
 # .env file
-.env*
+.env
 
 # Project build
 main
@@ -33,6 +33,11 @@ main
 # OS X generated file
 .DS_Store
 
+# Build directories
 build
 
+# Certs directory
 certs/
+
+# Don't push .env.example file
+!.env.example

@@ -51,7 +51,6 @@ func BuildContainer(cfg *configs.Config, mongoDB *mongo.Database, logger *zerolo
 		Build: func(ctn di.Container) (interface{}, error) {
 			repo := ctn.Get("roleRepository").(*repository.RoleRepository)
 			log := ctn.Get("logger").(*zerolog.Logger)
-			// NewRoleService memuat data permission dari YAML melalui helper
 			roleService, err := service.NewRoleService(repo, log)
 			if err != nil {
 				return nil, err

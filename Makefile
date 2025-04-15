@@ -18,7 +18,7 @@ watch:
 # Install dependencies & setup environment
 setup:
 	@echo "📦 Setting up project..."
-	@go mod download
+	@go mod download & go mod tidy
 	@cp .env.example .env || true
 
 # Generate Swagger API docs
@@ -31,9 +31,9 @@ gen-docs:
 env-up:
 	@echo "🐘 Starting environment container..."
 
-	@docker compose --env-file ./.env -f ./deploy/docker-compose.env.yml up --build -d
+	@docker compose --env-file .env up --build -d
 
 # Shutdown environment container
 env-down:
 	@echo "🛑 Stopping environment container..."
-	@docker compose --env-file ./.env -f ./deploy/docker-compose.env.yml down
+	@docker compose --env-file .env down
