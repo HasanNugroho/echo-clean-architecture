@@ -1,0 +1,11 @@
+permissions:
+  - users:create
+  - users:read
+  - users:update
+  - users:delete
+  - manage:system
+  - roles:read
+  - roles:update
+  - roles:delete
+  - roles:assign
+  - roles:unassign
