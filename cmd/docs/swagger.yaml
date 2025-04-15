@@ -1,0 +1,564 @@
+basePath: /api/v1
+definitions:
+  model.AssignRoleModel:
+    properties:
+      role_id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  model.CreateRoleRequest:
+    properties:
+      name:
+        type: string
+      permission:
+        items:
+          type: string
+        type: array
+    required:
+    - name
+    - permission
+    type: object
+  model.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  model.DataWithPagination:
+    properties:
+      items: {}
+      paging:
+        $ref: '#/definitions/model.Pagination'
+    type: object
+  model.Pagination:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total_items:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  model.Role:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      permissions:
+        items:
+          type: string
+        type: array
+      updated_at:
+        type: string
+    type: object
+  model.UpdateRoleRequest:
+    properties:
+      name:
+        type: string
+      permission:
+        items:
+          type: string
+        type: array
+    type: object
+  model.UpdateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    type: object
+  model.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      roles:
+        items:
+          type: string
+        type: array
+      updated_at:
+        type: string
+    type: object
+  model.WebResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+host: localhost:7000
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+  description: This is a sample server.
+  title: Starter Golang API
+  version: "1.0"
+paths:
+  /roles:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all roles
+      parameters:
+      - default: 10
+        description: total data per-page
+        in: query
+        minimum: 1
+        name: limit
+        type: integer
+      - default: 1
+        description: page
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - description: keyword
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.WebResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/model.DataWithPagination'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/model.Role'
+                        type: array
+                    type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all roles
+      tags:
+      - roles
+    post:
+      consumes:
+      - application/json
+      description: Create an role
+      parameters:
+      - description: role Data
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create an role
+      tags:
+      - roles
+  /roles/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete role by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete role
+      tags:
+      - roles
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a role by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.WebResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Role'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all roles
+      tags:
+      - roles
+    put:
+      consumes:
+      - application/json
+      description: Update role
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: role Data
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/model.UpdateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update role
+      tags:
+      - roles
+  /roles/assign:
+    post:
+      consumes:
+      - application/json
+      description: Assign an role
+      parameters:
+      - description: role Data
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/model.AssignRoleModel'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Assign an role
+      tags:
+      - roles
+  /roles/unassign:
+    post:
+      consumes:
+      - application/json
+      description: UnAssign an role
+      parameters:
+      - description: role Data
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/model.AssignRoleModel'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: UnAssign an role
+      tags:
+      - roles
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all users
+      parameters:
+      - default: 10
+        description: total data per-page
+        in: query
+        minimum: 1
+        name: limit
+        type: integer
+      - default: 1
+        description: page
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - description: keyword
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.WebResponse'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/model.DataWithPagination'
+                  - properties:
+                      items:
+                        items:
+                          $ref: '#/definitions/model.UserResponse'
+                        type: array
+                    type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create an user
+      parameters:
+      - description: User Data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create an user
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete user
+      tags:
+      - users
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a user by ID
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.WebResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UserResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all users
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update user
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User Data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update user
+      tags:
+      - users
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

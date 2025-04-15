@@ -6,15 +6,15 @@ import (
 	"github.com/HasanNugroho/golang-starter/internal/errs"
 	"github.com/HasanNugroho/golang-starter/internal/helper"
 	"github.com/labstack/echo/v4"
-	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
-func ErrorHandler(logger *zerolog.Logger) echo.MiddlewareFunc {
+func ErrorHandler() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			defer func() {
 				if r := recover(); r != nil {
-					logger.Error().Msgf("Recovered from panic: %v", r)
+					log.Error().Msgf("Recovered from panic: %v", r)
 					helper.SendError(c, http.StatusInternalServerError, "Internal Server Error", nil)
 				}
 			}()
@@ -29,7 +29,7 @@ func ErrorHandler(logger *zerolog.Logger) echo.MiddlewareFunc {
 				return nil
 			}
 
-			logger.Error().Err(err).Msg("Unhandled error")
+			log.Error().Err(err).Msg("Unhandled error")
 			helper.SendError(c, http.StatusInternalServerError, "Internal Server Error", nil)
 			return nil
 		}

@@ -66,7 +66,7 @@ func (u *UserRepository) FindById(ctx context.Context, id string) (*model.User, 
 }
 
 func (u *UserRepository) FindAll(ctx context.Context, filter *model.PaginationFilter) (*[]model.User, int, error) {
-	var users *[]model.User
+	var users []model.User
 	var totalItems int64
 
 	opts := options.Find().
@@ -88,7 +88,7 @@ func (u *UserRepository) FindAll(ctx context.Context, filter *model.PaginationFi
 		return nil, 0, errs.Internal("failed to count users", err)
 	}
 
-	return users, int(totalItems), nil
+	return &users, int(totalItems), nil
 }
 
 func (u *UserRepository) Update(ctx context.Context, id string, user *model.User) error {

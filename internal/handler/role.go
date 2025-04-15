@@ -29,11 +29,11 @@ func NewRoleHandler(rs service.IRoleService) *RoleHandler {
 // @Tags         roles
 // @Accept       json
 // @Produce      json
-// @Param        role  body  RoleUpdateModel  true  "role Data"
-// @Success      201  {object}  shared.Response
-// @Failure      400  {object}  shared.Response
-// @Failure      404  {object}  shared.Response
-// @Failure      500  {object}  shared.Response
+// @Param        role  body  model.CreateRoleRequest  true  "role Data"
+// @Success      201  {object}  model.WebResponse
+// @Failure      400  {object}  model.WebResponse
+// @Failure      404  {object}  model.WebResponse
+// @Failure      500  {object}  model.WebResponse
 // @Router       /roles [post]
 // @Security ApiKeyAuth
 func (c *RoleHandler) Create(ctx echo.Context) error {
@@ -61,8 +61,8 @@ func (c *RoleHandler) Create(ctx echo.Context) error {
 // @Param limit query int false "total data per-page" minimum(1) default(10)
 // @Param page query int false "page" minimum(1) default(1)
 // @Param search query string false "keyword"
-// @Success      200     {object}  shared.Response{data=shared.DataWithPagination{items=[]RoleModel}}
-// @Failure      500     {object}  shared.Response
+// @Success      200     {object}  model.WebResponse{data=model.DataWithPagination{items=[]model.Role}}
+// @Failure      500     {object}  model.WebResponse
 // @Router       /roles [get]
 // @Security ApiKeyAuth
 func (c *RoleHandler) FindAll(ctx echo.Context) error {
@@ -94,8 +94,8 @@ func (c *RoleHandler) FindAll(ctx echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param id path string true "id"
-// @Success      200     {object}  shared.Response{data=RoleModel}
-// @Failure      500     {object}  shared.Response
+// @Success      200     {object}  model.WebResponse{data=model.Role}
+// @Failure      500     {object}  model.WebResponse
 // @Router       /roles/{id} [get]
 // @Security ApiKeyAuth
 func (c *RoleHandler) FindById(ctx echo.Context) error {
@@ -121,11 +121,11 @@ func (c *RoleHandler) FindById(ctx echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param id path string true "id"
-// @Param        role  body  RoleUpdateModel  true  "role Data"
-// @Success      201  {object}  shared.Response
-// @Failure      400  {object}  shared.Response
-// @Failure      404  {object}  shared.Response
-// @Failure      500  {object}  shared.Response
+// @Param        role  body  model.UpdateRoleRequest  true  "role Data"
+// @Success      201  {object}  model.WebResponse
+// @Failure      400  {object}  model.WebResponse
+// @Failure      404  {object}  model.WebResponse
+// @Failure      500  {object}  model.WebResponse
 // @Router       /roles/{id} [put]
 // @Security ApiKeyAuth
 func (c *RoleHandler) Update(ctx echo.Context) error {
@@ -157,8 +157,8 @@ func (c *RoleHandler) Update(ctx echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param id path string true "id"
-// @Success      200     {object}  shared.Response
-// @Failure      500     {object}  shared.Response
+// @Success      200     {object}  model.WebResponse
+// @Failure      500     {object}  model.WebResponse
 // @Router       /roles/{id} [delete]
 // @Security ApiKeyAuth
 func (c *RoleHandler) Delete(ctx echo.Context) error {
@@ -183,11 +183,11 @@ func (c *RoleHandler) Delete(ctx echo.Context) error {
 // @Tags         roles
 // @Accept       json
 // @Produce      json
-// @Param        role  body  AssignRoleModel  true  "role Data"
-// @Success      201  {object}  shared.Response
-// @Failure      400  {object}  shared.Response
-// @Failure      404  {object}  shared.Response
-// @Failure      500  {object}  shared.Response
+// @Param        role  body  model.AssignRoleModel  true  "role Data"
+// @Success      201  {object}  model.WebResponse
+// @Failure      400  {object}  model.WebResponse
+// @Failure      404  {object}  model.WebResponse
+// @Failure      500  {object}  model.WebResponse
 // @Router       /roles/assign [post]
 // @Security ApiKeyAuth
 func (c *RoleHandler) AssignUser(ctx echo.Context) error {
@@ -212,11 +212,11 @@ func (c *RoleHandler) AssignUser(ctx echo.Context) error {
 // @Tags         roles
 // @Accept       json
 // @Produce      json
-// @Param        role  body  AssignRoleModel  true  "role Data"
-// @Success      201  {object}  shared.Response
-// @Failure      400  {object}  shared.Response
-// @Failure      404  {object}  shared.Response
-// @Failure      500  {object}  shared.Response
+// @Param        role  body  model.AssignRoleModel  true  "role Data"
+// @Success      201  {object}  model.WebResponse
+// @Failure      400  {object}  model.WebResponse
+// @Failure      404  {object}  model.WebResponse
+// @Failure      500  {object}  model.WebResponse
 // @Router       /roles/unassign [post]
 // @Security ApiKeyAuth
 func (c *RoleHandler) UnAssignUser(ctx echo.Context) error {

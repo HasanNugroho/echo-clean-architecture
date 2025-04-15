@@ -29,11 +29,11 @@ func NewUserHandler(us service.IUserService) *UserHandler {
 // @Tags         users
 // @Accept       json
 // @Produce      json
-// @Param        user  body  UserCreateModel  true  "User Data"
-// @Success      201  {object}  shared.Response
-// @Failure      400  {object}  shared.Response
-// @Failure      404  {object}  shared.Response
-// @Failure      500  {object}  shared.Response
+// @Param        user  body  model.CreateUserRequest  true  "User Data"
+// @Success      201  {object}  model.WebResponse
+// @Failure      400  {object}  model.WebResponse
+// @Failure      404  {object}  model.WebResponse
+// @Failure      500  {object}  model.WebResponse
 // @Router       /users [post]
 // @Security ApiKeyAuth
 func (c *UserHandler) Create(ctx echo.Context) error {
@@ -61,8 +61,8 @@ func (c *UserHandler) Create(ctx echo.Context) error {
 // @Param limit query int false "total data per-page" minimum(1) default(10)
 // @Param page query int false "page" minimum(1) default(1)
 // @Param search query string false "keyword"
-// @Success      200     {object}  shared.Response{data=shared.DataWithPagination{items=[]UserModelResponse}}
-// @Failure      500     {object}  shared.Response
+// @Success      200     {object}  model.WebResponse{data=model.DataWithPagination{items=[]model.UserResponse}}
+// @Failure      500     {object}  model.WebResponse
 // @Router       /users [get]
 // @Security ApiKeyAuth
 func (c *UserHandler) FindAll(ctx echo.Context) error {
@@ -95,8 +95,8 @@ func (c *UserHandler) FindAll(ctx echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param id path string true "id"
-// @Success      200     {object}  shared.Response{data=UserModel}
-// @Failure      500     {object}  shared.Response
+// @Success      200     {object}  model.WebResponse{data=model.UserResponse}
+// @Failure      500     {object}  model.WebResponse
 // @Router       /users/{id} [get]
 // @Security ApiKeyAuth
 func (c *UserHandler) FindById(ctx echo.Context) error {
@@ -122,11 +122,11 @@ func (c *UserHandler) FindById(ctx echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param id path string true "id"
-// @Param        user  body  UserUpdateModel  true  "User Data"
-// @Success      201  {object}  shared.Response
-// @Failure      400  {object}  shared.Response
-// @Failure      404  {object}  shared.Response
-// @Failure      500  {object}  shared.Response
+// @Param        user  body  model.UpdateUserRequest  true  "User Data"
+// @Success      201  {object}  model.WebResponse
+// @Failure      400  {object}  model.WebResponse
+// @Failure      404  {object}  model.WebResponse
+// @Failure      500  {object}  model.WebResponse
 // @Router       /users/{id} [put]
 // @Security ApiKeyAuth
 func (c *UserHandler) Update(ctx echo.Context) error {
@@ -158,8 +158,8 @@ func (c *UserHandler) Update(ctx echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param id path string true "id"
-// @Success      200     {object}  shared.Response
-// @Failure      500     {object}  shared.Response
+// @Success      200     {object}  model.WebResponse
+// @Failure      500     {object}  model.WebResponse
 // @Router       /users/{id} [delete]
 // @Security ApiKeyAuth
 func (c *UserHandler) Delete(ctx echo.Context) error {

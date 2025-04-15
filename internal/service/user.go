@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/HasanNugroho/golang-starter/internal/errs"
 	"github.com/HasanNugroho/golang-starter/internal/helper"
 	"github.com/HasanNugroho/golang-starter/internal/model"
 	"github.com/HasanNugroho/golang-starter/internal/repository"
@@ -26,9 +27,8 @@ func NewUserService(repo repository.IUserRepository, logger *zerolog.Logger) *Us
 func (u *UserService) Create(ctx context.Context, user *model.CreateUserRequest) error {
 	_, err := u.repo.FindByEmail(ctx, user.Email)
 
-	if err != nil {
-		u.logger.Error().Err(err).Str("email", user.Email).Msg("failed to find user for update")
-		return err
+	if err == nil {
+		return errs.BadRequest("email exist", err)
 	}
 
 	password, err := helper.HashPassword([]byte(user.Password))
@@ -72,7 +72,7 @@ func (u *UserService) FindById(ctx context.Context, id string) (*model.UserRespo
 	return &response, nil
 }
 
-func (u *UserService) FindAll(ctx context.Context, filter *model.PaginationFilter) (*[]model.User, int64, error) {
+func (u *UserService) FindAll(ctx context.Context, filter *model.PaginationFilter) (*[]model.UserResponse, int64, error) {
 	users, totalItems, err := u.repo.FindAll(ctx, filter)
 	if err != nil {
 		u.logger.Error().Err(err).
@@ -81,10 +81,20 @@ func (u *UserService) FindAll(ctx context.Context, filter *model.PaginationFilte
 			Int("limit", filter.Limit).
 			Msg("error from repo")
 
-		return &[]model.User{}, 0, err
+		return &[]model.UserResponse{}, 0, err
 	}
 
-	return users, int64(totalItems), nil
+	var usersResponse []model.UserResponse
+	for _, user := range *users {
+		usersResponse = append(usersResponse, model.UserResponse{
+			ID:        user.ID.Hex(),
+			Email:     user.Email,
+			Name:      user.Name,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+		})
+	}
+	return &usersResponse, int64(totalItems), nil
 }
 
 func (u *UserService) Update(ctx context.Context, id string, user *model.UpdateUserRequest) error {

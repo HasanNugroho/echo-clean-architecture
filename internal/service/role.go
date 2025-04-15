@@ -19,7 +19,7 @@ type RoleService struct {
 }
 
 func NewRoleService(repo repository.IRoleRepository, logger *zerolog.Logger) (*RoleService, error) {
-	perm, err := helper.LoadStringListFromYAML("data.yaml", "permission")
+	perm, err := helper.LoadStringListFromYAML("./internal/constant/data.yaml", "permission")
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load permission data")
 		return nil, err
