@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/HasanNugroho/golang-starter/internal/errs"
@@ -24,7 +26,9 @@ func ErrorHandler() echo.MiddlewareFunc {
 				return nil
 			}
 
-			if customErr, ok := err.(*errs.CustomError); ok {
+			fmt.Println(err)
+			var customErr *errs.CustomError
+			if errors.As(err, &customErr) {
 				helper.SendError(c, customErr.StatusCode(), customErr.MessageText(), nil)
 				return nil
 			}

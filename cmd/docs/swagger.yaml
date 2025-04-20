@@ -1,13 +1,13 @@
 basePath: /api/v1
 definitions:
-  model.AssignRoleModel:
+  account.AssignRoleModel:
     properties:
       role_id:
         type: string
       user_id:
         type: string
     type: object
-  model.CreateRoleRequest:
+  account.CreateRoleRequest:
     properties:
       name:
         type: string
@@ -19,7 +19,7 @@ definitions:
     - name
     - permission
     type: object
-  model.CreateUserRequest:
+  account.CreateUserRequest:
     properties:
       email:
         type: string
@@ -32,6 +32,64 @@ definitions:
     - email
     - name
     - password
+    type: object
+  account.Role:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      permissions:
+        items:
+          type: string
+        type: array
+      updated_at:
+        type: string
+    type: object
+  account.UpdateRoleRequest:
+    properties:
+      name:
+        type: string
+      permission:
+        items:
+          type: string
+        type: array
+    type: object
+  account.UpdateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    type: object
+  account.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      roles:
+        items:
+          $ref: '#/definitions/account.Role'
+        type: array
+      updated_at:
+        type: string
+    type: object
+  auth.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
     type: object
   model.DataWithPagination:
     properties:
@@ -50,57 +108,6 @@ definitions:
       total_pages:
         type: integer
     type: object
-  model.Role:
-    properties:
-      created_at:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      permissions:
-        items:
-          type: string
-        type: array
-      updated_at:
-        type: string
-    type: object
-  model.UpdateRoleRequest:
-    properties:
-      name:
-        type: string
-      permission:
-        items:
-          type: string
-        type: array
-    type: object
-  model.UpdateUserRequest:
-    properties:
-      email:
-        type: string
-      name:
-        type: string
-      password:
-        minLength: 6
-        type: string
-    type: object
-  model.UserResponse:
-    properties:
-      created_at:
-        type: string
-      email:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      roles:
-        items:
-          type: string
-        type: array
-      updated_at:
-        type: string
-    type: object
   model.WebResponse:
     properties:
       data: {}
@@ -118,6 +125,42 @@ info:
   title: Starter Golang API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return access token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: User login
+      tags:
+      - auth
   /roles:
     get:
       consumes:
@@ -155,7 +198,7 @@ paths:
                   - properties:
                       items:
                         items:
-                          $ref: '#/definitions/model.Role'
+                          $ref: '#/definitions/account.Role'
                         type: array
                     type: object
               type: object
@@ -178,7 +221,7 @@ paths:
         name: role
         required: true
         schema:
-          $ref: '#/definitions/model.CreateRoleRequest'
+          $ref: '#/definitions/account.CreateRoleRequest'
       produces:
       - application/json
       responses:
@@ -250,7 +293,7 @@ paths:
             - $ref: '#/definitions/model.WebResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/model.Role'
+                  $ref: '#/definitions/account.Role'
               type: object
         "500":
           description: Internal Server Error
@@ -276,7 +319,7 @@ paths:
         name: role
         required: true
         schema:
-          $ref: '#/definitions/model.UpdateRoleRequest'
+          $ref: '#/definitions/account.UpdateRoleRequest'
       produces:
       - application/json
       responses:
@@ -312,7 +355,7 @@ paths:
         name: role
         required: true
         schema:
-          $ref: '#/definitions/model.AssignRoleModel'
+          $ref: '#/definitions/account.AssignRoleModel'
       produces:
       - application/json
       responses:
@@ -348,7 +391,7 @@ paths:
         name: role
         required: true
         schema:
-          $ref: '#/definitions/model.AssignRoleModel'
+          $ref: '#/definitions/account.AssignRoleModel'
       produces:
       - application/json
       responses:
@@ -410,7 +453,7 @@ paths:
                   - properties:
                       items:
                         items:
-                          $ref: '#/definitions/model.UserResponse'
+                          $ref: '#/definitions/account.UserResponse'
                         type: array
                     type: object
               type: object
@@ -433,7 +476,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/model.CreateUserRequest'
+          $ref: '#/definitions/account.CreateUserRequest'
       produces:
       - application/json
       responses:
@@ -505,7 +548,7 @@ paths:
             - $ref: '#/definitions/model.WebResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/model.UserResponse'
+                  $ref: '#/definitions/account.UserResponse'
               type: object
         "500":
           description: Internal Server Error
@@ -531,7 +574,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/model.UpdateUserRequest'
+          $ref: '#/definitions/account.UpdateUserRequest'
       produces:
       - application/json
       responses:
@@ -554,6 +597,25 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Update user
+      tags:
+      - users
+  /users/me:
+    get:
+      description: Get current authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get current user
       tags:
       - users
 securityDefinitions:

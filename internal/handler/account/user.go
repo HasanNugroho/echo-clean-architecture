@@ -6,7 +6,8 @@ import (
 	"github.com/HasanNugroho/golang-starter/internal/errs"
 	"github.com/HasanNugroho/golang-starter/internal/helper"
 	"github.com/HasanNugroho/golang-starter/internal/model"
-	"github.com/HasanNugroho/golang-starter/internal/service"
+	"github.com/HasanNugroho/golang-starter/internal/model/account"
+	service "github.com/HasanNugroho/golang-starter/internal/service/account"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
@@ -23,13 +24,33 @@ func NewUserHandler(us service.IUserService) *UserHandler {
 	}
 }
 
+// GetCurrentUser godoc
+// @Summary      Get current user
+// @Description  Get current authenticated user
+// @Tags         users
+// @Produce      json
+// @Success      200  {object}  model.WebResponse
+// @Failure      401  {object}  model.WebResponse
+// @Router       /users/me [get]
+// @Security     ApiKeyAuth
+func (c *UserHandler) GetCurrentUser(ctx echo.Context) error {
+	user, ok := ctx.Get("user").(*account.User)
+	if !ok || user == nil || !user.IsHasAccess([]string{"users:read"}) {
+		return errs.Unauthorized("unauthorized", nil)
+	}
+
+	resp := user.ToUserResponse()
+	helper.SendSuccess(ctx, http.StatusOK, "success", resp)
+	return nil
+}
+
 // CreateUser godoc
 // @Summary      Create an user
 // @Description  Create an user
 // @Tags         users
 // @Accept       json
 // @Produce      json
-// @Param        user  body  model.CreateUserRequest  true  "User Data"
+// @Param        user  body  account.CreateUserRequest  true  "User Data"
 // @Success      201  {object}  model.WebResponse
 // @Failure      400  {object}  model.WebResponse
 // @Failure      404  {object}  model.WebResponse
@@ -37,14 +58,19 @@ func NewUserHandler(us service.IUserService) *UserHandler {
 // @Router       /users [post]
 // @Security ApiKeyAuth
 func (c *UserHandler) Create(ctx echo.Context) error {
-	var user model.CreateUserRequest
-	ctx.Bind(&user)
+	user, ok := ctx.Get("user").(*account.User)
+	if !ok || user == nil || !user.IsHasAccess([]string{"users:create"}) {
+		return errs.Unauthorized("unauthorized", nil)
+	}
 
-	if err := c.validate.Struct(user); err != nil {
+	var payload account.CreateUserRequest
+	ctx.Bind(&payload)
+
+	if err := c.validate.Struct(payload); err != nil {
 		return errs.BadRequest("bad request", err)
 	}
 
-	if err := c.userService.Create(ctx.Request().Context(), &user); err != nil {
+	if err := c.userService.Create(ctx.Request().Context(), &payload); err != nil {
 		return err
 	}
 
@@ -61,11 +87,16 @@ func (c *UserHandler) Create(ctx echo.Context) error {
 // @Param limit query int false "total data per-page" minimum(1) default(10)
 // @Param page query int false "page" minimum(1) default(1)
 // @Param search query string false "keyword"
-// @Success      200     {object}  model.WebResponse{data=model.DataWithPagination{items=[]model.UserResponse}}
+// @Success      200     {object}  model.WebResponse{data=model.DataWithPagination{items=[]account.UserResponse}}
 // @Failure      500     {object}  model.WebResponse
 // @Router       /users [get]
 // @Security ApiKeyAuth
 func (c *UserHandler) FindAll(ctx echo.Context) error {
+	user, ok := ctx.Get("user").(*account.User)
+	if !ok || user == nil || !user.IsHasAccess([]string{"users:read"}) {
+		return errs.Unauthorized("unauthorized", nil)
+	}
+
 	var filter model.PaginationFilter
 
 	// Binding query parameters
@@ -95,11 +126,16 @@ func (c *UserHandler) FindAll(ctx echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param id path string true "id"
-// @Success      200     {object}  model.WebResponse{data=model.UserResponse}
+// @Success      200     {object}  model.WebResponse{data=account.UserResponse}
 // @Failure      500     {object}  model.WebResponse
 // @Router       /users/{id} [get]
 // @Security ApiKeyAuth
 func (c *UserHandler) FindById(ctx echo.Context) error {
+	user, ok := ctx.Get("user").(*account.User)
+	if !ok || user == nil || !user.IsHasAccess([]string{"users:read"}) {
+		return errs.Unauthorized("unauthorized", nil)
+	}
+
 	id := ctx.Param("id")
 
 	if err := c.validate.Var(id, "required"); err != nil {
@@ -111,7 +147,7 @@ func (c *UserHandler) FindById(ctx echo.Context) error {
 		return err
 	}
 
-	helper.SendSuccess(ctx, http.StatusOK, "User retrieved successfully", user)
+	helper.SendSuccess(ctx, http.StatusOK, "User retrieved successfully", user.ToUserResponse())
 	return nil
 }
 
@@ -122,7 +158,7 @@ func (c *UserHandler) FindById(ctx echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param id path string true "id"
-// @Param        user  body  model.UpdateUserRequest  true  "User Data"
+// @Param        user  body  account.UpdateUserRequest  true  "User Data"
 // @Success      201  {object}  model.WebResponse
 // @Failure      400  {object}  model.WebResponse
 // @Failure      404  {object}  model.WebResponse
@@ -130,10 +166,15 @@ func (c *UserHandler) FindById(ctx echo.Context) error {
 // @Router       /users/{id} [put]
 // @Security ApiKeyAuth
 func (c *UserHandler) Update(ctx echo.Context) error {
-	id := ctx.Param("id")
-	var user model.UpdateUserRequest
+	user, ok := ctx.Get("user").(*account.User)
+	if !ok || user == nil || !user.IsHasAccess([]string{"users:update"}) {
+		return errs.Unauthorized("unauthorized", nil)
+	}
 
-	ctx.Bind(&user)
+	id := ctx.Param("id")
+	var payload account.UpdateUserRequest
+
+	ctx.Bind(&payload)
 
 	if err := c.validate.Var(id, "required"); err != nil {
 		return errs.BadRequest("bad request", err)
@@ -143,7 +184,7 @@ func (c *UserHandler) Update(ctx echo.Context) error {
 		return errs.BadRequest("bad request", err)
 	}
 
-	if err := c.userService.Update(ctx.Request().Context(), id, &user); err != nil {
+	if err := c.userService.Update(ctx.Request().Context(), id, &payload); err != nil {
 		return err
 	}
 
@@ -163,6 +204,11 @@ func (c *UserHandler) Update(ctx echo.Context) error {
 // @Router       /users/{id} [delete]
 // @Security ApiKeyAuth
 func (c *UserHandler) Delete(ctx echo.Context) error {
+	user, ok := ctx.Get("user").(*account.User)
+	if !ok || user == nil || !user.IsHasAccess([]string{"users:delete"}) {
+		return errs.Unauthorized("unauthorized", nil)
+	}
+
 	id := ctx.Param("id")
 
 	if err := c.validate.Var(id, "required"); err != nil {

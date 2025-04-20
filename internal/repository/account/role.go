@@ -1,11 +1,13 @@
-package repository
+package account
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/HasanNugroho/golang-starter/internal/errs"
 	"github.com/HasanNugroho/golang-starter/internal/model"
+	"github.com/HasanNugroho/golang-starter/internal/model/account"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -24,37 +26,60 @@ func NewRoleRepository(mongoDB *mongo.Database, logger *zerolog.Logger) *RoleRep
 	}
 }
 
-func (r *RoleRepository) Create(ctx context.Context, role *model.Role) error {
+func (r *RoleRepository) Create(ctx context.Context, role *account.Role) error {
 	_, err := r.coll.InsertOne(ctx, role)
 	return err
 }
 
-func (r *RoleRepository) FindById(ctx context.Context, id string) (*model.Role, error) {
-	var role model.Role
+func (r *RoleRepository) FindById(ctx context.Context, id string) (*account.Role, error) {
+	var role account.Role
 	objectID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		return &model.Role{}, errs.BadRequest("invalid ID format", err)
+		return &account.Role{}, errs.BadRequest("invalid ID format", err)
 	}
 
 	filter := bson.M{"_id": objectID}
 	err = r.coll.FindOne(ctx, filter).Decode(&role)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return &model.Role{}, errs.NotFound("data not found", err)
+			return &account.Role{}, errs.NotFound("data not found", err)
 		}
 
-		return &model.Role{}, errs.Internal("failed to find data", err)
+		return &account.Role{}, errs.Internal("failed to find data", err)
 	}
 
 	return &role, nil
 }
 
-func (r *RoleRepository) FindManyByID(ctx context.Context, ids []string) (*[]model.Role, error) {
-	panic("")
+func (r *RoleRepository) FindManyByID(ctx context.Context, ids []bson.ObjectID) (*[]account.Role, error) {
+	var roles []account.Role
+
+	filter := bson.M{
+		"_id": bson.M{
+			"$in": ids,
+		},
+	}
+	fmt.Println(filter)
+	cursor, err := r.coll.Find(ctx, filter)
+	if err != nil {
+		return &[]account.Role{}, errs.Internal("failed to query roles", err)
+	}
+	defer cursor.Close(ctx)
+
+	if err := cursor.All(ctx, &roles); err != nil {
+		return &[]account.Role{}, errs.Internal("failed to decode roles", err)
+	}
+
+	// Optional: return not found if empty
+	if len(roles) == 0 {
+		return &[]account.Role{}, errs.NotFound("no roles found", nil)
+	}
+
+	return &roles, nil
 }
 
-func (r *RoleRepository) FindAll(ctx context.Context, filter *model.PaginationFilter) (*[]model.Role, int, error) {
-	var roles *[]model.Role
+func (r *RoleRepository) FindAll(ctx context.Context, filter *model.PaginationFilter) (*[]account.Role, int, error) {
+	var roles []account.Role
 	var totalItems int64
 
 	opts := options.Find().
@@ -77,10 +102,10 @@ func (r *RoleRepository) FindAll(ctx context.Context, filter *model.PaginationFi
 		return nil, 0, errs.Internal("failed to count data", err)
 	}
 
-	return roles, int(totalItems), nil
+	return &roles, int(totalItems), nil
 }
 
-func (r *RoleRepository) Update(ctx context.Context, id string, role *model.Role) error {
+func (r *RoleRepository) Update(ctx context.Context, id string, role *account.Role) error {
 	objectId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return errs.BadRequest("invalid ID format", err)

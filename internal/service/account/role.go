@@ -1,4 +1,4 @@
-package service
+package account
 
 import (
 	"context"
@@ -8,17 +8,18 @@ import (
 	"github.com/HasanNugroho/golang-starter/internal/errs"
 	"github.com/HasanNugroho/golang-starter/internal/helper"
 	"github.com/HasanNugroho/golang-starter/internal/model"
-	"github.com/HasanNugroho/golang-starter/internal/repository"
+	"github.com/HasanNugroho/golang-starter/internal/model/account"
+	repo "github.com/HasanNugroho/golang-starter/internal/repository/account"
 	"github.com/rs/zerolog"
 )
 
 type RoleService struct {
-	repo       repository.IRoleRepository
+	repo       repo.IRoleRepository
 	logger     *zerolog.Logger
 	permMaster map[string]struct{}
 }
 
-func NewRoleService(repo repository.IRoleRepository, logger *zerolog.Logger) (*RoleService, error) {
+func NewRoleService(repo repo.IRoleRepository, logger *zerolog.Logger) (*RoleService, error) {
 	perm, err := helper.LoadStringListFromYAML("./internal/constant/data.yaml", "permission")
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to load permission data")
@@ -31,7 +32,7 @@ func NewRoleService(repo repository.IRoleRepository, logger *zerolog.Logger) (*R
 	}, nil
 }
 
-func (r *RoleService) Create(ctx context.Context, role *model.CreateRoleRequest) error {
+func (r *RoleService) Create(ctx context.Context, role *account.CreateRoleRequest) error {
 	var invalid []string
 	for _, p := range role.Permissions {
 		if _, ok := r.permMaster[p]; !ok {
@@ -42,7 +43,7 @@ func (r *RoleService) Create(ctx context.Context, role *model.CreateRoleRequest)
 		return errs.BadRequest("invalid permission", fmt.Errorf("invalid permissions: %v", invalid))
 	}
 
-	payload := model.Role{
+	payload := account.Role{
 		Name:        role.Name,
 		Permissions: role.Permissions,
 		CreatedAt:   time.Now(),
@@ -57,16 +58,16 @@ func (r *RoleService) Create(ctx context.Context, role *model.CreateRoleRequest)
 	return nil
 }
 
-func (r *RoleService) FindById(ctx context.Context, id string) (*model.Role, error) {
+func (r *RoleService) FindById(ctx context.Context, id string) (*account.Role, error) {
 	role, err := r.repo.FindById(ctx, id)
 	if err != nil {
 		r.logger.Error().Err(err).Str("roleID", id).Msg("error from repo")
-		return &model.Role{}, err
+		return &account.Role{}, err
 	}
 	return role, err
 }
 
-func (r *RoleService) FindAll(ctx context.Context, filter *model.PaginationFilter) (*[]model.Role, int64, error) {
+func (r *RoleService) FindAll(ctx context.Context, filter *model.PaginationFilter) (*[]account.Role, int64, error) {
 	roles, totalItems, err := r.repo.FindAll(ctx, filter)
 	if err != nil {
 		r.logger.Error().Err(err).
@@ -75,13 +76,13 @@ func (r *RoleService) FindAll(ctx context.Context, filter *model.PaginationFilte
 			Int("limit", filter.Limit).
 			Msg("error from repo")
 
-		return &[]model.Role{}, 0, err
+		return &[]account.Role{}, 0, err
 	}
 
 	return roles, int64(totalItems), nil
 }
 
-func (r *RoleService) Update(ctx context.Context, id string, role *model.UpdateRoleRequest) error {
+func (r *RoleService) Update(ctx context.Context, id string, role *account.UpdateRoleRequest) error {
 	currentRole, err := r.repo.FindById(ctx, id)
 	if err != nil {
 		r.logger.Error().Err(err).Str("role", id).Msg("failed to find role for update")
@@ -117,7 +118,7 @@ func (r *RoleService) Delete(ctx context.Context, id string) error {
 	return err
 }
 
-func (r *RoleService) AssignUser(ctx context.Context, payload *model.AssignRoleModel) error {
+func (r *RoleService) AssignUser(ctx context.Context, payload *account.AssignRoleModel) error {
 	err := r.repo.AssignUser(ctx, payload.UserID, payload.RoleID)
 	if err != nil {
 		r.logger.Error().Err(err).Fields(payload).Msg("failed to assign user")
@@ -125,7 +126,7 @@ func (r *RoleService) AssignUser(ctx context.Context, payload *model.AssignRoleM
 	return err
 }
 
-func (r *RoleService) UnassignUser(ctx context.Context, payload *model.AssignRoleModel) error {
+func (r *RoleService) UnassignUser(ctx context.Context, payload *account.AssignRoleModel) error {
 	err := r.repo.UnassignUser(ctx, payload.UserID, payload.RoleID)
 	if err != nil {
 		r.logger.Error().Err(err).Fields(payload).Msg("failed to unassign user")

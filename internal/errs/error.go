@@ -42,3 +42,7 @@ func NotFound(msg string, err error) *CustomError {
 func Internal(msg string, err error) *CustomError {
 	return &CustomError{Code: http.StatusInternalServerError, Message: msg, Err: err}
 }
+
+func Unauthorized(msg string, err error) *CustomError {
+	return &CustomError{Code: http.StatusUnauthorized, Message: msg, Err: err}
+}

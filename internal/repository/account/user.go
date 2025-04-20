@@ -1,4 +1,4 @@
-package repository
+package account
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/HasanNugroho/golang-starter/internal/errs"
 	"github.com/HasanNugroho/golang-starter/internal/model"
+	"github.com/HasanNugroho/golang-starter/internal/model/account"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -24,49 +25,49 @@ func NewUserRepository(mongoDB *mongo.Database, logger *zerolog.Logger) *UserRep
 	}
 }
 
-func (u *UserRepository) Create(ctx context.Context, user *model.User) error {
+func (u *UserRepository) Create(ctx context.Context, user *account.User) error {
 	_, err := u.coll.InsertOne(ctx, &user)
 	return err
 }
 
-func (u *UserRepository) FindByEmail(ctx context.Context, email string) (*model.User, error) {
-	var user model.User
+func (u *UserRepository) FindByEmail(ctx context.Context, email string) (*account.User, error) {
+	var user account.User
 
 	filter := bson.M{"email": email}
 	err := u.coll.FindOne(ctx, filter).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return &model.User{}, errs.NotFound("not found", err)
+			return &account.User{}, errs.NotFound("not found", err)
 		}
 
-		return &model.User{}, errs.Internal("failed to find user", err)
+		return &account.User{}, errs.Internal("failed to find user", err)
 	}
 
 	return &user, nil
 }
 
-func (u *UserRepository) FindById(ctx context.Context, id string) (*model.User, error) {
-	var user model.User
+func (u *UserRepository) FindById(ctx context.Context, id string) (*account.User, error) {
+	var user account.User
 	objectID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		return &model.User{}, errs.BadRequest("invalid ID format", err)
+		return &account.User{}, errs.BadRequest("invalid ID format", err)
 	}
 
 	filter := bson.M{"_id": objectID}
 	err = u.coll.FindOne(ctx, filter).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return &model.User{}, errs.NotFound("not found", err)
+			return &account.User{}, errs.NotFound("not found", err)
 		}
 
-		return &model.User{}, errs.Internal("failed to find user", err)
+		return &account.User{}, errs.Internal("failed to find user", err)
 	}
 
 	return &user, nil
 }
 
-func (u *UserRepository) FindAll(ctx context.Context, filter *model.PaginationFilter) (*[]model.User, int, error) {
-	var users []model.User
+func (u *UserRepository) FindAll(ctx context.Context, filter *model.PaginationFilter) (*[]account.User, int, error) {
+	var users []account.User
 	var totalItems int64
 
 	opts := options.Find().
@@ -91,7 +92,7 @@ func (u *UserRepository) FindAll(ctx context.Context, filter *model.PaginationFi
 	return &users, int(totalItems), nil
 }
 
-func (u *UserRepository) Update(ctx context.Context, id string, user *model.User) error {
+func (u *UserRepository) Update(ctx context.Context, id string, user *account.User) error {
 	objectId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return errs.BadRequest("invalid ID format", err)

@@ -6,7 +6,8 @@ import (
 	"github.com/HasanNugroho/golang-starter/internal/errs"
 	"github.com/HasanNugroho/golang-starter/internal/helper"
 	"github.com/HasanNugroho/golang-starter/internal/model"
-	"github.com/HasanNugroho/golang-starter/internal/service"
+	"github.com/HasanNugroho/golang-starter/internal/model/account"
+	service "github.com/HasanNugroho/golang-starter/internal/service/account"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
@@ -29,7 +30,7 @@ func NewRoleHandler(rs service.IRoleService) *RoleHandler {
 // @Tags         roles
 // @Accept       json
 // @Produce      json
-// @Param        role  body  model.CreateRoleRequest  true  "role Data"
+// @Param        role  body  account.CreateRoleRequest  true  "role Data"
 // @Success      201  {object}  model.WebResponse
 // @Failure      400  {object}  model.WebResponse
 // @Failure      404  {object}  model.WebResponse
@@ -37,7 +38,12 @@ func NewRoleHandler(rs service.IRoleService) *RoleHandler {
 // @Router       /roles [post]
 // @Security ApiKeyAuth
 func (c *RoleHandler) Create(ctx echo.Context) error {
-	var role model.CreateRoleRequest
+	user, ok := ctx.Get("user").(*account.User)
+	if !ok || user == nil || !user.IsHasAccess([]string{"roles:create"}) {
+		return errs.Unauthorized("unauthorized", nil)
+	}
+
+	var role account.CreateRoleRequest
 	ctx.Bind(&role)
 
 	if err := c.validate.Struct(role); err != nil {
@@ -61,11 +67,16 @@ func (c *RoleHandler) Create(ctx echo.Context) error {
 // @Param limit query int false "total data per-page" minimum(1) default(10)
 // @Param page query int false "page" minimum(1) default(1)
 // @Param search query string false "keyword"
-// @Success      200     {object}  model.WebResponse{data=model.DataWithPagination{items=[]model.Role}}
+// @Success      200     {object}  model.WebResponse{data=model.DataWithPagination{items=[]account.Role}}
 // @Failure      500     {object}  model.WebResponse
 // @Router       /roles [get]
 // @Security ApiKeyAuth
 func (c *RoleHandler) FindAll(ctx echo.Context) error {
+	user, ok := ctx.Get("user").(*account.User)
+	if !ok || user == nil || !user.IsHasAccess([]string{"roles:read"}) {
+		return errs.Unauthorized("unauthorized", nil)
+	}
+
 	var filter model.PaginationFilter
 
 	if err := ctx.Bind(&filter); err != nil {
@@ -94,11 +105,16 @@ func (c *RoleHandler) FindAll(ctx echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param id path string true "id"
-// @Success      200     {object}  model.WebResponse{data=model.Role}
+// @Success      200     {object}  model.WebResponse{data=account.Role}
 // @Failure      500     {object}  model.WebResponse
 // @Router       /roles/{id} [get]
 // @Security ApiKeyAuth
 func (c *RoleHandler) FindById(ctx echo.Context) error {
+	user, ok := ctx.Get("user").(*account.User)
+	if !ok || user == nil || !user.IsHasAccess([]string{"roles:read"}) {
+		return errs.Unauthorized("unauthorized", nil)
+	}
+
 	id := ctx.Param("id")
 
 	if err := c.validate.Var(id, "required"); err != nil {
@@ -121,7 +137,7 @@ func (c *RoleHandler) FindById(ctx echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param id path string true "id"
-// @Param        role  body  model.UpdateRoleRequest  true  "role Data"
+// @Param        role  body  account.UpdateRoleRequest  true  "role Data"
 // @Success      201  {object}  model.WebResponse
 // @Failure      400  {object}  model.WebResponse
 // @Failure      404  {object}  model.WebResponse
@@ -129,8 +145,13 @@ func (c *RoleHandler) FindById(ctx echo.Context) error {
 // @Router       /roles/{id} [put]
 // @Security ApiKeyAuth
 func (c *RoleHandler) Update(ctx echo.Context) error {
+	user, ok := ctx.Get("user").(*account.User)
+	if !ok || user == nil || !user.IsHasAccess([]string{"roles:update"}) {
+		return errs.Unauthorized("unauthorized", nil)
+	}
+
 	id := ctx.Param("id")
-	var role model.UpdateRoleRequest
+	var role account.UpdateRoleRequest
 
 	ctx.Bind(&role)
 
@@ -162,6 +183,11 @@ func (c *RoleHandler) Update(ctx echo.Context) error {
 // @Router       /roles/{id} [delete]
 // @Security ApiKeyAuth
 func (c *RoleHandler) Delete(ctx echo.Context) error {
+	user, ok := ctx.Get("user").(*account.User)
+	if !ok || user == nil || !user.IsHasAccess([]string{"roles:delete"}) {
+		return errs.Unauthorized("unauthorized", nil)
+	}
+
 	id := ctx.Param("id")
 
 	if err := c.validate.Var(id, "required"); err != nil {
@@ -183,7 +209,7 @@ func (c *RoleHandler) Delete(ctx echo.Context) error {
 // @Tags         roles
 // @Accept       json
 // @Produce      json
-// @Param        role  body  model.AssignRoleModel  true  "role Data"
+// @Param        role  body  account.AssignRoleModel  true  "role Data"
 // @Success      201  {object}  model.WebResponse
 // @Failure      400  {object}  model.WebResponse
 // @Failure      404  {object}  model.WebResponse
@@ -191,7 +217,12 @@ func (c *RoleHandler) Delete(ctx echo.Context) error {
 // @Router       /roles/assign [post]
 // @Security ApiKeyAuth
 func (c *RoleHandler) AssignUser(ctx echo.Context) error {
-	var payload model.AssignRoleModel
+	user, ok := ctx.Get("user").(*account.User)
+	if !ok || user == nil || !user.IsHasAccess([]string{"roles:assign"}) {
+		return errs.Unauthorized("unauthorized", nil)
+	}
+
+	var payload account.AssignRoleModel
 	ctx.Bind(&payload)
 
 	if err := c.validate.Struct(payload); err != nil {
@@ -212,7 +243,7 @@ func (c *RoleHandler) AssignUser(ctx echo.Context) error {
 // @Tags         roles
 // @Accept       json
 // @Produce      json
-// @Param        role  body  model.AssignRoleModel  true  "role Data"
+// @Param        role  body  account.AssignRoleModel  true  "role Data"
 // @Success      201  {object}  model.WebResponse
 // @Failure      400  {object}  model.WebResponse
 // @Failure      404  {object}  model.WebResponse
@@ -220,7 +251,12 @@ func (c *RoleHandler) AssignUser(ctx echo.Context) error {
 // @Router       /roles/unassign [post]
 // @Security ApiKeyAuth
 func (c *RoleHandler) UnAssignUser(ctx echo.Context) error {
-	var payload model.AssignRoleModel
+	user, ok := ctx.Get("user").(*account.User)
+	if !ok || user == nil || !user.IsHasAccess([]string{"roles:unassign"}) {
+		return errs.Unauthorized("unauthorized", nil)
+	}
+
+	var payload account.AssignRoleModel
 	ctx.Bind(&payload)
 
 	if err := c.validate.Struct(payload); err != nil {

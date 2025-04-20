@@ -1,32 +1,35 @@
-package service
+package account
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/HasanNugroho/golang-starter/internal/errs"
 	"github.com/HasanNugroho/golang-starter/internal/helper"
 	"github.com/HasanNugroho/golang-starter/internal/model"
-	"github.com/HasanNugroho/golang-starter/internal/repository"
+	"github.com/HasanNugroho/golang-starter/internal/model/account"
+	repository "github.com/HasanNugroho/golang-starter/internal/repository/account"
 	"github.com/rs/zerolog"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type UserService struct {
-	repo   repository.IUserRepository
-	logger *zerolog.Logger
+	repo     repository.IUserRepository
+	rolerepo repository.IRoleRepository
+	logger   *zerolog.Logger
 }
 
-func NewUserService(repo repository.IUserRepository, logger *zerolog.Logger) *UserService {
+func NewUserService(repo repository.IUserRepository, rolerepo repository.IRoleRepository, logger *zerolog.Logger) *UserService {
 	return &UserService{
-		repo:   repo,
-		logger: logger,
+		repo:     repo,
+		rolerepo: rolerepo,
+		logger:   logger,
 	}
 }
 
-func (u *UserService) Create(ctx context.Context, user *model.CreateUserRequest) error {
+func (u *UserService) Create(ctx context.Context, user *account.CreateUserRequest) error {
 	_, err := u.repo.FindByEmail(ctx, user.Email)
-
 	if err == nil {
 		return errs.BadRequest("email exist", err)
 	}
@@ -37,7 +40,7 @@ func (u *UserService) Create(ctx context.Context, user *model.CreateUserRequest)
 		return err
 	}
 
-	payload := model.User{
+	payload := account.User{
 		Email:     user.Email,
 		Name:      user.Name,
 		Roles:     []bson.ObjectID{},
@@ -54,25 +57,38 @@ func (u *UserService) Create(ctx context.Context, user *model.CreateUserRequest)
 	return nil
 }
 
-func (u *UserService) FindById(ctx context.Context, id string) (*model.UserResponse, error) {
+func (u *UserService) FindByEmail(ctx context.Context, email string) (*account.User, error) {
+	user, err := u.repo.FindByEmail(ctx, email)
+	if err != nil {
+		u.logger.Error().Err(err).Str("email", email).Msg("failed to get user")
+		return &account.User{}, err
+	}
+
+	roles, err := u.rolerepo.FindManyByID(ctx, user.Roles)
+	if err == nil {
+		user.RolesDetail = roles
+	}
+
+	return user, nil
+}
+
+func (u *UserService) FindById(ctx context.Context, id string) (*account.User, error) {
 	user, err := u.repo.FindById(ctx, id)
 	if err != nil {
 		u.logger.Error().Err(err).Str("userID", id).Msg("error from repo")
-		return &model.UserResponse{}, err
+		return &account.User{}, err
 	}
 
-	response := model.UserResponse{
-		ID:        user.ID.Hex(),
-		Email:     user.Email,
-		Name:      user.Name,
-		Roles:     user.Roles,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+	roles, err := u.rolerepo.FindManyByID(ctx, user.Roles)
+	fmt.Println(roles)
+	if err == nil {
+		user.RolesDetail = roles
 	}
-	return &response, nil
+
+	return user, nil
 }
 
-func (u *UserService) FindAll(ctx context.Context, filter *model.PaginationFilter) (*[]model.UserResponse, int64, error) {
+func (u *UserService) FindAll(ctx context.Context, filter *model.PaginationFilter) (*[]account.UserResponse, int64, error) {
 	users, totalItems, err := u.repo.FindAll(ctx, filter)
 	if err != nil {
 		u.logger.Error().Err(err).
@@ -81,12 +97,12 @@ func (u *UserService) FindAll(ctx context.Context, filter *model.PaginationFilte
 			Int("limit", filter.Limit).
 			Msg("error from repo")
 
-		return &[]model.UserResponse{}, 0, err
+		return &[]account.UserResponse{}, 0, err
 	}
 
-	var usersResponse []model.UserResponse
+	var usersResponse []account.UserResponse
 	for _, user := range *users {
-		usersResponse = append(usersResponse, model.UserResponse{
+		usersResponse = append(usersResponse, account.UserResponse{
 			ID:        user.ID.Hex(),
 			Email:     user.Email,
 			Name:      user.Name,
@@ -97,7 +113,7 @@ func (u *UserService) FindAll(ctx context.Context, filter *model.PaginationFilte
 	return &usersResponse, int64(totalItems), nil
 }
 
-func (u *UserService) Update(ctx context.Context, id string, user *model.UpdateUserRequest) error {
+func (u *UserService) Update(ctx context.Context, id string, user *account.UpdateUserRequest) error {
 	existingUser, err := u.repo.FindById(ctx, id)
 	if err != nil {
 		u.logger.Error().Err(err).Str("user", id).Msg("failed to find user for update")

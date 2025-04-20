@@ -4,11 +4,16 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/HasanNugroho/golang-starter/internal/app"
 	"github.com/HasanNugroho/golang-starter/internal/configs"
-	"github.com/HasanNugroho/golang-starter/internal/handler"
-	"github.com/HasanNugroho/golang-starter/internal/handler/route"
+	accountHandler "github.com/HasanNugroho/golang-starter/internal/handler/account"
+	accountRoute "github.com/HasanNugroho/golang-starter/internal/handler/account/route"
+	authHandler "github.com/HasanNugroho/golang-starter/internal/handler/auth"
+	authRoute "github.com/HasanNugroho/golang-starter/internal/handler/auth/route"
+	"github.com/HasanNugroho/golang-starter/internal/helper"
+	"github.com/HasanNugroho/golang-starter/internal/middleware"
 	"github.com/labstack/echo/v4"
 )
 
@@ -29,21 +34,25 @@ func Init(config *configs.Config, router *echo.Echo) {
 		panic(1)
 	}
 
+	helper.SetJWTConfig(config.Security.JWTSecretKey, time.Duration(config.Security.JWTExpired)*time.Hour)
+
 	container, err := app.BuildContainer(config, mongoDB, logger)
 	if err != nil {
 		logger.Fatal().Msg(err.Error())
 		panic(1)
 	}
-	// Penting: jangan defer container.Delete() di sini!
-	// Karena kita ingin container tetap aktif selama aplikasi berjalan, lalu dihapus saat shutdown.
 
 	apiGroup := router.Group("/api")
-	roleHandler := container.Get("roleHandler").(*handler.RoleHandler)
-	userHandler := container.Get("userHandler").(*handler.UserHandler)
+	authMiddleware := container.Get("authMiddleware").(*middleware.AuthMiddleware)
+
+	roleHandler := container.Get("roleHandler").(*accountHandler.RoleHandler)
+	userHandler := container.Get("userHandler").(*accountHandler.UserHandler)
+	authHandler := container.Get("authHandler").(*authHandler.AuthHandler)
 
 	// Daftarkan route
-	route.NewRoleRoute(apiGroup, roleHandler)
-	route.NewUserRoute(apiGroup, userHandler)
+	accountRoute.NewRoleRoute(apiGroup, roleHandler, authMiddleware)
+	accountRoute.NewUserRoute(apiGroup, userHandler, authMiddleware)
+	authRoute.NewAuthRoute(apiGroup, authHandler)
 
 	// Siapkan fungsi shutdown untuk melakukan cleanup (misal: shutdown Redis dan container)
 	shutdownFunc := func() {
