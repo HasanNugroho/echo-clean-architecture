@@ -44,8 +44,56 @@ func (a *AuthService) Login(ctx context.Context, request auth.LoginRequest) (aut
 		return auth.AuthResponse{}, errs.Unauthorized("failed to generate token", err)
 	}
 
+	refreshToken, err := helper.GenerateRefreshToken(user.ID.Hex())
+	if err != nil {
+		return auth.AuthResponse{}, errs.Unauthorized("failed to generate token", err)
+	}
+
 	return auth.AuthResponse{
-		Token: accessToken,
+		Token:        accessToken,
+		RefreshToken: refreshToken,
+		Data: map[string]string{
+			"user_id": user.ID.Hex(),
+			"email":   user.Email,
+		},
+	}, nil
+}
+
+func (a *AuthService) RefreshToken(ctx context.Context, request auth.RenewalTokenRequest) (auth.AuthResponse, error) {
+	claims, err := helper.ParseToken(request.RefreshToken)
+	if err != nil {
+		a.logger.Error().Err(err).Msg("invalid or expired refresh token")
+		return auth.AuthResponse{}, errs.Unauthorized("Unauthorized", err)
+	}
+
+	userID, ok := claims["user_id"].(string)
+	if !ok {
+		a.logger.Error().Msg("invalid token payload")
+		return auth.AuthResponse{}, errs.Unauthorized("Unauthorized", nil)
+	}
+
+	// Cek user masih ada
+	user, err := a.userservice.FindById(ctx, userID)
+	if err != nil {
+		return auth.AuthResponse{}, errs.Unauthorized("User not found", err)
+	}
+
+	// Blacklist refresh token lama
+	_ = helper.RevokeRequestToken(request.RefreshToken)
+
+	accessToken, err := helper.GenerateToken(userID)
+	if err != nil {
+		return auth.AuthResponse{}, errs.Unauthorized("failed to generate token", err)
+	}
+
+	refreshToken, err := helper.GenerateRefreshToken(userID)
+	if err != nil {
+		return auth.AuthResponse{}, errs.Unauthorized("failed to generate token", err)
+	}
+
+	return auth.AuthResponse{
+		Token:        accessToken,
+		RefreshToken: refreshToken,
 		Data: map[string]string{
 			"user_id": user.ID.Hex(),
 			"email":   user.Email,

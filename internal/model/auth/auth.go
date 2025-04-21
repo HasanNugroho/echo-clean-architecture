@@ -11,4 +11,8 @@ type (
 		RefreshToken string      `json:"refresh_token"`
 		Data         interface{} `json:"data"`
 	}
+
+	RenewalTokenRequest struct {
+		RefreshToken string `json:"refresh_token" validate:"required"`
+	}
 )

@@ -30,7 +30,7 @@ func NewAuthHandler(rs auth.IAuthService) *AuthHandler {
 // @Accept       json
 // @Produce      json
 // @Param        login  body  auth.LoginRequest  true  "Login credentials"
-// @Success      200  {object}  model.WebResponse
+// @Success      200  {object}  model.WebResponse{data=auth.AuthResponse}
 // @Failure      400  {object}  model.WebResponse
 // @Failure      401  {object}  model.WebResponse
 // @Failure      500  {object}  model.WebResponse
@@ -47,6 +47,38 @@ func (c *AuthHandler) Login(ctx echo.Context) error {
 	}
 
 	resp, err := c.authService.Login(ctx.Request().Context(), request)
+	if err != nil {
+		return err
+	}
+
+	helper.SendSuccess(ctx, http.StatusOK, "login successful", resp)
+	return nil
+}
+
+// RefreshToken godoc
+// @Summary      User login
+// @Description  Authenticate user and return access token
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        login  body  auth.RenewalTokenRequest  true  "Login credentials"
+// @Success      200  {object}  model.WebResponse{data=auth.AuthResponse}
+// @Failure      400  {object}  model.WebResponse
+// @Failure      401  {object}  model.WebResponse
+// @Failure      500  {object}  model.WebResponse
+// @Router       /auth/refresh [post]
+// @Security     ApiKeyAuth
+func (c *AuthHandler) RefreshToken(ctx echo.Context) error {
+	var request model.RenewalTokenRequest
+	if err := ctx.Bind(&request); err != nil {
+		return errs.BadRequest("invalid request format", err)
+	}
+
+	if err := c.validate.Struct(request); err != nil {
+		return errs.BadRequest("validation error", err)
+	}
+
+	resp, err := c.authService.RefreshToken(ctx.Request().Context(), request)
 	if err != nil {
 		return err
 	}

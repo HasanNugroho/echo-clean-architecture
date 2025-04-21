@@ -34,7 +34,7 @@ func Init(config *configs.Config, router *echo.Echo) {
 		panic(1)
 	}
 
-	helper.SetJWTConfig(config.Security.JWTSecretKey, time.Duration(config.Security.JWTExpired)*time.Hour)
+	helper.SetJWTHelper(config.Security.JWTSecretKey, time.Duration(config.Security.JWTExpired)*time.Minute, time.Duration(config.Security.JWTRefreshTokenExpired)*time.Hour, redisClient)
 
 	container, err := app.BuildContainer(config, mongoDB, logger)
 	if err != nil {

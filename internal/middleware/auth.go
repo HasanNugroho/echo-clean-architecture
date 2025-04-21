@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"fmt"
+
 	"github.com/HasanNugroho/golang-starter/internal/errs"
 	"github.com/HasanNugroho/golang-starter/internal/helper"
 	"github.com/HasanNugroho/golang-starter/internal/service/account"
@@ -27,6 +29,8 @@ func (m *AuthMiddleware) AuthRequired() echo.MiddlewareFunc {
 			}
 
 			claims, err := helper.ParseToken(tokenString)
+			fmt.Println(err)
+
 			if err != nil {
 				m.logger.Error().Err(err).Msg("invalid or expired token")
 				return errs.Unauthorized("Unauthorized", err)

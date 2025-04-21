@@ -36,7 +36,7 @@ func NewUserHandler(us service.IUserService) *UserHandler {
 func (c *UserHandler) GetCurrentUser(ctx echo.Context) error {
 	user, ok := ctx.Get("user").(*account.User)
 	if !ok || user == nil || !user.IsHasAccess([]string{"users:read"}) {
-		return errs.Unauthorized("unauthorized", nil)
+		return errs.Forbidden("Forbidden", nil)
 	}
 
 	resp := user.ToUserResponse()
@@ -60,7 +60,7 @@ func (c *UserHandler) GetCurrentUser(ctx echo.Context) error {
 func (c *UserHandler) Create(ctx echo.Context) error {
 	user, ok := ctx.Get("user").(*account.User)
 	if !ok || user == nil || !user.IsHasAccess([]string{"users:create"}) {
-		return errs.Unauthorized("unauthorized", nil)
+		return errs.Forbidden("Forbidden", nil)
 	}
 
 	var payload account.CreateUserRequest
@@ -94,7 +94,7 @@ func (c *UserHandler) Create(ctx echo.Context) error {
 func (c *UserHandler) FindAll(ctx echo.Context) error {
 	user, ok := ctx.Get("user").(*account.User)
 	if !ok || user == nil || !user.IsHasAccess([]string{"users:read"}) {
-		return errs.Unauthorized("unauthorized", nil)
+		return errs.Forbidden("Forbidden", nil)
 	}
 
 	var filter model.PaginationFilter
@@ -133,7 +133,7 @@ func (c *UserHandler) FindAll(ctx echo.Context) error {
 func (c *UserHandler) FindById(ctx echo.Context) error {
 	user, ok := ctx.Get("user").(*account.User)
 	if !ok || user == nil || !user.IsHasAccess([]string{"users:read"}) {
-		return errs.Unauthorized("unauthorized", nil)
+		return errs.Forbidden("Forbidden", nil)
 	}
 
 	id := ctx.Param("id")
@@ -168,7 +168,7 @@ func (c *UserHandler) FindById(ctx echo.Context) error {
 func (c *UserHandler) Update(ctx echo.Context) error {
 	user, ok := ctx.Get("user").(*account.User)
 	if !ok || user == nil || !user.IsHasAccess([]string{"users:update"}) {
-		return errs.Unauthorized("unauthorized", nil)
+		return errs.Forbidden("Forbidden", nil)
 	}
 
 	id := ctx.Param("id")
@@ -206,7 +206,7 @@ func (c *UserHandler) Update(ctx echo.Context) error {
 func (c *UserHandler) Delete(ctx echo.Context) error {
 	user, ok := ctx.Get("user").(*account.User)
 	if !ok || user == nil || !user.IsHasAccess([]string{"users:delete"}) {
-		return errs.Unauthorized("unauthorized", nil)
+		return errs.Forbidden("Forbidden", nil)
 	}
 
 	id := ctx.Param("id")

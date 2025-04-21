@@ -9,11 +9,11 @@ import (
 func NewUserRoute(router *echo.Group, handler *handler.UserHandler, authMiddleware *middleware.AuthMiddleware) {
 	userRoutes := router.Group("/v1/users")
 	{
+		userRoutes.Use(authMiddleware.AuthRequired())
+
 		userRoutes.POST("", handler.Create)
 		userRoutes.GET("/", handler.FindAll)
 		userRoutes.GET("/:id", handler.FindById)
-
-		userRoutes.Use(authMiddleware.AuthRequired())
 		userRoutes.GET("/me", handler.GetCurrentUser)
 		userRoutes.PUT("/:id", handler.Update)
 		userRoutes.DELETE("/:id", handler.Delete)

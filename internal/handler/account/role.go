@@ -40,7 +40,7 @@ func NewRoleHandler(rs service.IRoleService) *RoleHandler {
 func (c *RoleHandler) Create(ctx echo.Context) error {
 	user, ok := ctx.Get("user").(*account.User)
 	if !ok || user == nil || !user.IsHasAccess([]string{"roles:create"}) {
-		return errs.Unauthorized("unauthorized", nil)
+		return errs.Forbidden("Forbidden", nil)
 	}
 
 	var role account.CreateRoleRequest
@@ -74,7 +74,7 @@ func (c *RoleHandler) Create(ctx echo.Context) error {
 func (c *RoleHandler) FindAll(ctx echo.Context) error {
 	user, ok := ctx.Get("user").(*account.User)
 	if !ok || user == nil || !user.IsHasAccess([]string{"roles:read"}) {
-		return errs.Unauthorized("unauthorized", nil)
+		return errs.Forbidden("Forbidden", nil)
 	}
 
 	var filter model.PaginationFilter
@@ -112,7 +112,7 @@ func (c *RoleHandler) FindAll(ctx echo.Context) error {
 func (c *RoleHandler) FindById(ctx echo.Context) error {
 	user, ok := ctx.Get("user").(*account.User)
 	if !ok || user == nil || !user.IsHasAccess([]string{"roles:read"}) {
-		return errs.Unauthorized("unauthorized", nil)
+		return errs.Forbidden("Forbidden", nil)
 	}
 
 	id := ctx.Param("id")
@@ -147,7 +147,7 @@ func (c *RoleHandler) FindById(ctx echo.Context) error {
 func (c *RoleHandler) Update(ctx echo.Context) error {
 	user, ok := ctx.Get("user").(*account.User)
 	if !ok || user == nil || !user.IsHasAccess([]string{"roles:update"}) {
-		return errs.Unauthorized("unauthorized", nil)
+		return errs.Forbidden("Forbidden", nil)
 	}
 
 	id := ctx.Param("id")
@@ -185,7 +185,7 @@ func (c *RoleHandler) Update(ctx echo.Context) error {
 func (c *RoleHandler) Delete(ctx echo.Context) error {
 	user, ok := ctx.Get("user").(*account.User)
 	if !ok || user == nil || !user.IsHasAccess([]string{"roles:delete"}) {
-		return errs.Unauthorized("unauthorized", nil)
+		return errs.Forbidden("Forbidden", nil)
 	}
 
 	id := ctx.Param("id")
@@ -219,7 +219,7 @@ func (c *RoleHandler) Delete(ctx echo.Context) error {
 func (c *RoleHandler) AssignUser(ctx echo.Context) error {
 	user, ok := ctx.Get("user").(*account.User)
 	if !ok || user == nil || !user.IsHasAccess([]string{"roles:assign"}) {
-		return errs.Unauthorized("unauthorized", nil)
+		return errs.Forbidden("Forbidden", nil)
 	}
 
 	var payload account.AssignRoleModel
@@ -253,7 +253,7 @@ func (c *RoleHandler) AssignUser(ctx echo.Context) error {
 func (c *RoleHandler) UnAssignUser(ctx echo.Context) error {
 	user, ok := ctx.Get("user").(*account.User)
 	if !ok || user == nil || !user.IsHasAccess([]string{"roles:unassign"}) {
-		return errs.Unauthorized("unauthorized", nil)
+		return errs.Forbidden("Forbidden", nil)
 	}
 
 	var payload account.AssignRoleModel

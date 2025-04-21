@@ -46,3 +46,7 @@ func Internal(msg string, err error) *CustomError {
 func Unauthorized(msg string, err error) *CustomError {
 	return &CustomError{Code: http.StatusUnauthorized, Message: msg, Err: err}
 }
+
+func Forbidden(msg string, err error) *CustomError {
+	return &CustomError{Code: http.StatusForbidden, Message: msg, Err: err}
+}

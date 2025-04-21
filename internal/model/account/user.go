@@ -88,6 +88,7 @@ func (u *User) IsHasAccess(permissions []string) bool {
 	if err != nil {
 		return false
 	}
+
 	for p := range defaultPerms {
 		permSet[p] = struct{}{}
 	}

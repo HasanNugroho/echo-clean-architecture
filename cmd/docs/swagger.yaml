@@ -84,12 +84,27 @@ definitions:
       updated_at:
         type: string
     type: object
+  auth.AuthResponse:
+    properties:
+      data: {}
+      refresh_token:
+        type: string
+      token:
+        type: string
+    type: object
   auth.LoginRequest:
     properties:
       email:
         type: string
       password:
         type: string
+    type: object
+  auth.RenewalTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
     type: object
   model.DataWithPagination:
     properties:
@@ -143,7 +158,53 @@ paths:
         "200":
           description: OK
           schema:
+            allOf:
+            - $ref: '#/definitions/model.WebResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/auth.AuthResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
             $ref: '#/definitions/model.WebResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.WebResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: User login
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return access token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RenewalTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.WebResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/auth.AuthResponse'
+              type: object
         "400":
           description: Bad Request
           schema:

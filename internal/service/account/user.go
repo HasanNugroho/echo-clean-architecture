@@ -2,7 +2,6 @@ package account
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/HasanNugroho/golang-starter/internal/errs"
@@ -80,7 +79,6 @@ func (u *UserService) FindById(ctx context.Context, id string) (*account.User, e
 	}
 
 	roles, err := u.rolerepo.FindManyByID(ctx, user.Roles)
-	fmt.Println(roles)
 	if err == nil {
 		user.RolesDetail = roles
 	}

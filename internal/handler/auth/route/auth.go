@@ -10,6 +10,7 @@ func NewAuthRoute(router *echo.Group, handler *handler.AuthHandler) {
 	{
 		// route.Use(middleware.AuthMiddleware(app))
 		route.POST("/login", handler.Login)
+		route.POST("/refresh", handler.RefreshToken)
 
 	}
 }
